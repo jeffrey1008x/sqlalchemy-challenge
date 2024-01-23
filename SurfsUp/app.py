@@ -133,13 +133,21 @@ def start(start):
 @app.route("/api/v1.0/<start>/<end>")
 def startend(start, end):
 
-    output = []
+    output = {}
 
     if start and end:
         start = start.replace(' ','-').replace('/','-')
-        output.append(start)
         end = end.replace(' ','-').replace('/','-')
-        output.append(end)
+
+        sel_data = session.query(func.min(measurement.tobs),func.max(measurement.tobs),func.avg(measurement.tobs))\
+        .filter(measurement.station == station.station)\
+        .filter(measurement.date >= start)\
+        .filter(measurement.date <= end)\
+        .all()
+
+        output['TMIN'] = sel_data[0][0]
+        output['TMAX'] = sel_data[0][1]
+        output['TAVG'] = sel_data[0][2]
 
     return jsonify(output)
 
